@@ -32,60 +32,47 @@ final class MethodTest extends TestCase
 	public function setUp(): void
 	{
 		$this->method = new Method;
-
-		$this->firstArgument = (new Argument)
-			->setType(string::class)
-			->setName('name')
-			->setDescription('the name')
-		;
-
-		$this->secondArgument = (new Argument)
-			->setType(FileInterface::class)
-			->setName('argument')
-			->setDescription('the argument')
-		;
 	}
 
 	public function testAcceptsOnlyNamedParameters()
 	{
-		$this->firstArgument
-			->method('getName')
-			->willReturn('')
-		;
+		$anonymousArgument = new Argument;
 
 		$this->expectException(AnonymousArgumentException::class);
 
 		$this->method
-			->addArgument($this->firstArgument)
+			->addArgument($anonymousArgument)
 		;
 	}
 
 	public function testDoesNotAcceptDuplicateArgument()
 	{
-		$this->firstArgument
-			->method('getName')
-			->willReturn('argument')
+		$firstArgument = (new Argument)
+			->setName('argument')
+		;
+
+		$secondArgument = (new Argument)
+			->setName('argument')
 		;
 
 		$this->expectException(DuplicateArgumentException::class);
 		
 		$this->method
-			->addArgument($this->firstArgument)
-			->addArgument($this->firstArgument)
+			->addArgument($firstArgument)
+			->addArgument($secondArgument)
 		;
 	}
 
 	public function testRefusesMisnamedArguments()
 	{
-		$this->firstArgument
-			->method('getName')
-			->willReturn('some argument')
+		$misnamedArgument = (new Argument)
+			->setName('invalid name')
 		;
 
 		$this->expectException(MisnamedArgumentException::class);
 
 		$this->method
-			->addArgument($this->firstArgument)
+			->addArgument($misnamedArgument)
 		;
 	}
 
@@ -93,16 +80,29 @@ final class MethodTest extends TestCase
 	{
 		// TODO: refactor using trait DependantTrait, NameableTrait, ScopableTrait, ModifiableTrait
 
-		// $this->method->addArgument($secondArgument);
-		// $this->assertNotEquals(PhpFileInterface::class, $this->argument->getType());
+		$namespacedArgument = (new Argument)
+			->setName('file')
+			->setType(PhpFileInterface::class)
+		;
+
+		$this->method->addArgument($namespacedArgument);
+		$this->assertNotEquals(PhpFileInterface::class, $namespacedArgument->getType());
+	
+		$litteralArgument = (new Argument)
+			->setName('count')
+			->setType('int')
+		;
+
+		$this->method->addArgument($litteralArgument);
+		$this->assertEquals('int', $litteralArgument->getType());
 	}
 
-	public function testAddsTypeToDependencies()
-	{
-		// TODO: refactor using trait DependantTrait, NameableTrait, ScopableTrait, ModifiableTrait
+	// public function testAddsTypeToDependencies()
+	// {
+	// 	// TODO: refactor using trait DependantTrait, NameableTrait, ScopableTrait, ModifiableTrait
 
-		// checks $method->dependencies after addArgument
-	}
+	// 	// checks $method->dependencies after addArgument
+	// }
 
 	public function testModifierOverride()
 	{
@@ -149,17 +149,17 @@ final class MethodTest extends TestCase
 		$this->assertNotEquals('public', $this->method->getScope());
 	}
 
-	public function testWriteDeclaration()
-	{
-		$this->method
-			->setName('execute')
-			->makeFinal()
-			->makePublic()
-			->addArgument($this->firstArgument)
-			->addArgument($this->secondArgument)
-		;
+	// public function testWriteDeclaration()
+	// {
+	// 	$this->method
+	// 		->setName('execute')
+	// 		->makeFinal()
+	// 		->makePublic()
+	// 		->addArgument($this->firstArgument)
+	// 		->addArgument($this->secondArgument)
+	// 	;
 
-		$this->expectOutputString('test');
-		$this->method->writeDeclaration();
-	}
+	// 	$this->expectOutputString('test');
+	// 	$this->method->writeDeclaration();
+	// }
 }

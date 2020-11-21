@@ -18,7 +18,7 @@ final class Method implements MethodInterface
 	private const PROTECTED_SCOPE = 'protected';
 
 	private const PUBLIC_SCOPE = 'public';
-
+	
 	/**
 	 * @var string - the name of the method
 	 */
@@ -109,14 +109,13 @@ final class Method implements MethodInterface
 
 		// extracts namespace from type and put it has dependency
 		$type = $argument->getType();
-		// if (0 !== strpos($type, '\\')) {
-		// 	$this->addDependency($type);
-		// 	$offset = strrpos($type, '\\');
-		// 	$type = substr($type, $offset + 1);
-		// 	$argument->setType($type);
-		// }
+		if (false !== strpos($type, '\\')) {
+			// $this->addDependency($type);
+			$offset = strrpos($type, '\\');
+			$argument->setType(substr($type, $offset + 1));
+		}
 
-		// $this->arguments[] = $argument;
+		$this->arguments[] = $argument;
 
 		return $this;
 	}
