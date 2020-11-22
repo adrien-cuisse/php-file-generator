@@ -1,0 +1,31 @@
+<?php
+
+namespace App;
+
+use App\CommentableInterface;
+use App\DependantInterface;
+use App\MethodInterface;
+use App\NameableInterface;
+
+/**
+ * The subject of a PHP file, being an interface, a class, or a trait
+ */
+interface SubjectInterface extends CommentableInterface, DependantInterface, NameableInterface
+{
+	/**
+	 * @return MethodInterface - the list of stored interface
+	 */
+	public function getMethods(): array;
+
+	/**
+	 * @param MethodInterface - the method to add
+	 * 
+	 * @return self
+	 */
+	public function addMethod(MethodInterface $method): self;
+
+	/**
+	 * @return string - the subjects PHP code
+	 */
+	public function getCode(): string; 
+}

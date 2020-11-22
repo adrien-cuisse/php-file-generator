@@ -2,109 +2,57 @@
 
 namespace App;
 
-use App\ArgumentInterface;
+use App\CommentableInterface;
+use App\DependantInterface;
+use App\ExpandableInterface;
+use App\NameableInterface;
+use App\ScopeableInterface;
+use App\TypeableInterface;
 
-interface MethodInterface
+/**
+ * A method inside a subject (interface, class or trait)
+ */
+interface MethodInterface extends CommentableInterface, DependantInterface, ExpandableInterface, NameableInterface, ScopeableInterface, TypeableInterface
 {
 	/**
-	 * @return string - the name of the method
-	 */
-	public function getName(): string;
-
-	/**
-	 * @param string - the name to set
-	 */
-	public function setName(string $name): self;
-
-	/**
-	 * @return string|null - the return type, null for mixed (not to specify)
-	 */
-	public function getReturnType(): ?string;
-
-	/**
-	 * @param string - the return type of the method
+	 * Makes the method static
 	 * 
 	 * @return self
 	 */
-	public function setReturnType(string $type): self;
-	
+	public function makeStatic(): self;
+
 	/**
-	 * @return ArgumentInterface[] - the list of arguments of the method
+	 * @return bool - is the method static ? false if not configured
+	 */
+	public function isStatic(): bool;
+
+	/**
+	 * @return TypeableInterface[] - the list of arguments of the method
 	 */
 	public function getArguments(): array;
 
 	/**
-	 * Adds an argument to the method, the type is modified to extract namespace
+	 * @param ArgumentInterface - the argument to add
 	 * 
 	 * @throws AnonymousArgumentException - if no name was provided for the argument
-	 * @throws DuplicateArgumentException - if an argument with the same name has already been added
-	 * @throws MisnamedArgumentException - if argument name if invalid
-	 * 
-	 * @param ArgumentInterface - the argument to add
+	 * @throws InvalidArgumentNameException - if the name of the argument is invalid
+	 * @throws DuplicateAgumentException - if an argument with the same name has already been added
 	 * 
 	 * @return self
 	 */
 	public function addArgument(ArgumentInterface $argument): self;
 
 	/**
-	 * Makes the method abstract, overrides any makeFinal() call
+	 * @throws AnonymousMethodException - if method has not been named
+	 * @throws InvalidMethodNameDeclarationException - if invalid name has been provided
+	 * @throws FinalMethodDeclarationException - if the method is final
 	 * 
-	 * @return self
+	 * @return string - the PHP code to declare the method
 	 */
-	public function makeAbstract(): self;
+	public function getDeclaration(): self;
 
 	/**
-	 * @return bool - true is the method is abstract, false otherwise
+	 * @return string - the PHP code to declare the method
 	 */
-	public function isAbstract(): bool;
-
-	/**
-	 * Makes the method final, overrides any makeAbstract() call
-	 * 
-	 * @return self
-	 */
-	public function makeFinal(): self;
-
-	/**
-	 * @return bool - true is the method is final, false otherwise
-	 */
-	public function isFinal(): bool;
-
-	/**
-	 * @return string|null - the modifier (abstract/final) of the method, if any
-	 */
-	public function getModifier(): ?string;
-
-	/**
-	 * Sets the scope to public
-	 * 
-	 * @return self
-	 */
-	public function makePublic(): self;
-	
-	/**
-	 * Sets the scope to protected
-	 * 
-	 * @return self
-	 */
-	public function makeProtected(): self;
-	
-	/**
-	 * Sets the scope to private
-	 * 
-	 * @return self
-	 */
-	public function makePrivate(): self;
-
-	/**
-	 * @return string - the scope of the method (private by default)
-	 */
-	public function getScope(): string;
-
-	/**
-	 * Write the method declaration to STDOUT
-	 * 
-	 * @return self
-	 */
-	public function writeDeclaration(): self;
+	public function getDefinition(): self;
 }

@@ -2,32 +2,32 @@
 
 namespace App;
 
-use App\ArgumentInterface;
+use App\Commentable;
+use App\Dependant;
+use App\Expandable;
+use App\Nameable;
+use App\Scopeable;
+use App\Typeable;
 use App\Exception\AnonymousArgumentException;
-use App\Exception\MisnamedArgumentException;
+use App\Exception\AnonymousMethodException;
 use App\Exception\DuplicateArgumentException;
+use App\Exception\FinalMethodDeclarationException;
+use App\Exception\InvalidArgumentNameException;
+use App\Exception\InvalidMethodNameDeclarationException;
 
 final class Method implements MethodInterface
 {
-	private const ABSTRACT_MODIFIER = 'abstract';
-
-	private const FINAL_MODIFIER = 'final';
-
-	private const PRIVATE_SCOPE = 'private';
-
-	private const PROTECTED_SCOPE = 'protected';
-
-	private const PUBLIC_SCOPE = 'public';
-	
-	/**
-	 * @var string - the name of the method
-	 */
-	private string $name = '';
+	use Commentable;
+	use Dependant;
+	use Expandable;
+	use Nameable;
+	use Scopeable;
+	use Typeable;
 
 	/**
-	 * @var string|null - the return type, null for mixed (not to specify)
+	 * @var bool - is the method static ?
 	 */
-	private ?string $returnType = null;
+	private bool $isStatic = false;
 
 	/**
 	 * @var ArgumentInterface[] - the list of arguments of the method
@@ -35,29 +35,11 @@ final class Method implements MethodInterface
 	private array $arguments = [];
 
 	/**
-	 * @var string - the modifier, abstract or final
-	 */
-	private ?string $modifier = null;
-
-	/**
-	 * @var string - the scope of the method
-	 */
-	private string $scope = self::PRIVATE_SCOPE;
-
-	/**
 	 * @see MethodInterface
 	 */
-	public function getName(): string
+	final public function makeStatic(): self
 	{
-		return $this->name;
-	}
-
-	/**
-	 * @see MethodInterface
-	 */
-	public function setName(string $name): self
-	{
-		$this->name = $name;
+		$this->isStatic = true;
 
 		return $this;
 	}
@@ -65,25 +47,15 @@ final class Method implements MethodInterface
 	/**
 	 * @see MethodInterface
 	 */
-	public function getReturnType(): ?string
+	final public function isStatic(): bool
 	{
-		return $this->returnType;
+		return $this->isStatic;
 	}
 
 	/**
 	 * @see MethodInterface
 	 */
-	public function setReturnType(string $returnType): self
-	{
-		$this->returnType = $returnType;
-
-		return $this;
-	}
-
-	/**
-	 * @see MethodInterface
-	 */
-	public function getArguments(): array
+	final public function getArguments(): array
 	{
 		return $this->arguments;
 	}
@@ -91,30 +63,19 @@ final class Method implements MethodInterface
 	/**
 	 * @see MethodInterface
 	 */
-	public function addArgument(ArgumentInterface $argument): self
+	final public function addArgument(ArgumentInterface $argument): self
 	{
-		if ($argument->getName() === '') {
-			throw new AnonymousArgumentException($this->getName());
+		if (! $argument->isNamed()) {
+			throw new AnonymousArgumentException($this->name);
+		} else if (! $argument->hasValidName()) {
+			throw new InvalidArgumentNameException($this->name, $argument->getName());
+		} else if ($this->hasAlreadyArgumentName($argument)) {
+			throw new DuplicateArgumentException($this->name, $argument->getName());
 		}
-
-		if (0 === preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $argument->getName())) {
-			throw new MisnamedArgumentException($this->getName(), $argument->getName());
-		}
-
-		foreach ($this->arguments as $storedArgument) {
-			if ($storedArgument->getName() === $argument->getName()) {
-				throw new DuplicateArgumentException($this->getName(), $argument->getName());
-			}
-		}
-
-		// extracts namespace from type and put it has dependency
-		$type = $argument->getType();
-		if (false !== strpos($type, '\\')) {
-			// $this->addDependency($type);
-			$offset = strrpos($type, '\\');
-			$argument->setType(substr($type, $offset + 1));
-		}
-
+		
+		$this->addDependency($argument);
+		// TODO: if argument is typed and namespace, add it to dependencies (Dependant)
+		
 		$this->arguments[] = $argument;
 
 		return $this;
@@ -123,106 +84,81 @@ final class Method implements MethodInterface
 	/**
 	 * @see MethodInterface
 	 */
-	public function makeAbstract(): self
+	final public function getDeclaration(): self
 	{
-		$this->modifier = self::ABSTRACT_MODIFIER;
+		if (! $this->isNamed()) {
+			throw new AnonymousMethodException('declaration');
+		} else if (! $this->hasValidName()) {
+			throw new InvalidMethodNameDeclarationException($this->name);
+		} else if ($this->isFinal()) {
+			throw new FinalMethodDeclarationException($this->name);
+		}
+
+		$buffer = $this->getCanonicalDeclaration();
+
+		$buffer .= ';';
+
+		echo $buffer;
 
 		return $this;
-	}
-
-	/**
-	 * @see @MethodInterface
-	 */
-	public function isAbstract(): bool
-	{
-		return self::ABSTRACT_MODIFIER === $this->modifier;
 	}
 
 	/**
 	 * @see MethodInterface
 	 */
-	public function makeFinal(): self
+	final public function getDefinition(): self
 	{
-		$this->modifier = self::FINAL_MODIFIER;
 
 		return $this;
 	}
 
 	/**
-	 * @see @MethodInterface
+	 * @param ArgumentInterface - the argument to check
+	 * 
+	 * @return bool - true if an argument with the same was already added
 	 */
-	public function isFinal(): bool
+	final private function hasAlreadyArgumentName(ArgumentInterface $argument): bool
 	{
-		return self::FINAL_MODIFIER === $this->modifier;
-	}
-
-	/**
-	 * @see MethodInterface 
-	 */
-	public function getModifier(): ?string
-	{
-		return $this->modifier;
-	}
-
-	/**
-	 * @see @MethodInterface
-	 */
-	public function makePublic(): self
-	{
-		$this->scope = self::PUBLIC_SCOPE;
-
-		return $this;
-	}
-	
-	/**
-	 * @see @MethodInterface
-	 */
-	public function makeProtected(): self
-	{
-		$this->scope = self::PROTECTED_SCOPE;
-
-		return $this;
-	}
-	
-	/**
-	 * @see @MethodInterface
-	 */
-	public function makePrivate(): self
-	{
-		$this->scope = self::PRIVATE_SCOPE;
-
-		return $this;
-	}
-
-	/**
-	 * @see @MethodInterface
-	 */
-	public function getScope(): string
-	{
-		return $this->scope;
-	}
-
-	/**
-	 * @see @MethodInterface
-	 */
-	public function writeDeclaration(): self
-	{
-		$buffer = '';
-
-		$buffer .= $this->modifier ? $this->modifier . ' ' : '';
-		$buffer .= $this->scope . ' function ' . $this->name . '(' . PHP_EOL;
-
-		foreach ($this->arguments as $argument) {
-			$buffer .= $argument->getType() . '$' . $argument->getName();
-		// 	if ($argument !== end($$this->arguments)) {
-		// 		$buffer .= ',';
-		// 	}
-		// 	$buffer .= PHP_EOL;
+		foreach ($this->arguments as $storedArgument) {
+			if ($storedArgument->getName() === $argument->getName()) {
+				return true;
+			}
 		}
-		$buffer .= ') {}';
 
-		echo $buffer;
+		return false;
+	}
 
-		return $this;
+	/**
+	 * @return string - the canonical declaration string, without semi-colon
+	 * eg: protected function bar()
+	 * eg: abstract public function foo(string $test): bool
+	 * eg: private function handle(Request $bar, int $id): Response
+	 */
+	final private function getCanonicalDeclaration(): string
+	{
+		$buffer = sprintf(
+			'%s%s function %s(',
+			$this->isAbstract() ? 'abstract ' : '',
+			$this->scope,
+			$this->name
+		);
+		
+		$comma = false;
+		foreach ($this->arguments as $argument) {
+			if ($comma) {
+				$buffer .= ', ';
+			}
+
+			$buffer .= $argument->getCanonicalType() . ' $' . $argument->getName();
+			$comma = true;
+		}
+
+		$buffer .= ')';
+
+		if ($this->isTyped()) {
+			$buffer .= ': ' . $this->getCanonicalType();
+		}
+
+		return $buffer;
 	}
 }

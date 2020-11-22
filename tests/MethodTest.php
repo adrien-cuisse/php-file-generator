@@ -2,164 +2,213 @@
 
 namespace App\Tests;
 
-use App\Argument;
-use App\ArgumentInterface;
-use App\PhpFileInterface;
 use App\Method;
-use App\MethodInterface;
+use App\Argument;
 use App\Exception\AnonymousArgumentException;
-use App\Exception\MisnamedArgumentException;
+use App\Exception\AnonymousMethodException;
 use App\Exception\DuplicateArgumentException;
+use App\Exception\FinalMethodDeclarationException;
+use App\Exception\InvalidArgumentNameException;
+use App\Exception\InvalidMethodNameDeclarationException;
 use PHPUnit\Framework\TestCase;
 
 final class MethodTest extends TestCase
 {
-	/**
-	 * @var MethodInterface - the instance to test
-	 */
-	private MethodInterface $method;
-
-	/**
-	 * @var ArgumentInterface - first argument
-	 */
-	private ArgumentInterface $firstArgument;
-
-	/**
-	 * @var ArgumentInterface - second argument
-	 */
-	private ArgumentInterface $secondArgument;
-	
-	public function setUp(): void
+	final public function setUp(): void
 	{
-		$this->method = new Method;
+		$this->instance = new Method;
+		$this->argument = new Argument;
 	}
 
-	public function testAcceptsOnlyNamedParameters()
+	final public function testIsNotStaticByDefault()
 	{
-		$anonymousArgument = new Argument;
+		$this->assertFalse($this->instance->isStatic());
+	}
+
+	final public function testGoesStatic()
+	{
+		$this->instance->makeStatic();
+		$this->assertTrue($this->instance->isStatic());
+	}
+
+	final public function testRefusesAnonymousArguments()
+	{
+		$this->argument->setName('');
 
 		$this->expectException(AnonymousArgumentException::class);
-
-		$this->method
-			->addArgument($anonymousArgument)
-		;
+		$this->instance->addArgument($this->argument);
 	}
 
-	public function testDoesNotAcceptDuplicateArgument()
+	final public function testRefusesInvalidArgumentNames()
 	{
-		$firstArgument = (new Argument)
-			->setName('argument')
-		;
+		$this->argument->setName('42');
 
-		$secondArgument = (new Argument)
-			->setName('argument')
-		;
+		$this->expectException(InvalidArgumentNameException::class);
+		$this->instance->addArgument($this->argument);
+	}
+
+	final public function testRefusesDupliacateArgumentNames()
+	{
+		$this->argument->setName('argument');
 
 		$this->expectException(DuplicateArgumentException::class);
+		$this->instance->addArgument($this->argument);
+		$this->instance->addArgument($this->argument);
+	}
+
+	final public function testHasNoArgumentsByDefault()
+	{
+		$this->assertCount(0, $this->instance->getArguments());
+	}
+
+	final public function testArgumentIsAdded()
+	{
+		$this->argument->setName('argument');
+
+		$this->instance->addArgument($this->argument);
+		$this->assertCount(1, $this->instance->getArguments());
+	}
+
+	final public function testDependencyIsAdded()
+	{
+		$this->argument
+			->setName('case')
+			->setType(TestCase::class)
+		;
+
+		$this->instance->addArgument($this->argument);
+		$this->assertTrue($this->instance->hasDependencies());
+		$this->assertCount(1, $this->instance->getDependencies());
+	}
+
+	final public function testCanNotBeDeclaredIfNameIsMissing()
+	{
+		$this->expectException(AnonymousMethodException::class);
+		$this->instance->getDeclaration();
+	}
+
+	final public function testCanNotBeDeclaredIfNameIsInvalid()
+	{
+		$this->instance->setName('4');
+		$this->expectException(InvalidMethodNameDeclarationException::class);
+		$this->instance->getDeclaration();
+	}
+
+	final public function testCanNotBeDeclaredIfFinal()
+	{
+		$this->instance
+			->setName('test')
+			->makeFinal()	
+		;
 		
-		$this->method
-			->addArgument($firstArgument)
-			->addArgument($secondArgument)
-		;
+		$this->expectException(FinalMethodDeclarationException::class);
+		$this->instance->getDeclaration();
 	}
 
-	public function testRefusesMisnamedArguments()
+	final public function testMinimalDeclaration()
 	{
-		$misnamedArgument = (new Argument)
-			->setName('invalid name')
+		$this->instance
+			->setName('test')
+			->setType('string')
 		;
 
-		$this->expectException(MisnamedArgumentException::class);
-
-		$this->method
-			->addArgument($misnamedArgument)
-		;
+		$this->expectOutputString('private function test(): string;');
+		$this->instance->getDeclaration();
 	}
 
-	public function testExtractsNamespaceFromType()
+	final public function testScopeIsUpdatedInDeclaration()
 	{
-		// TODO: refactor using trait DependantTrait, NameableTrait, ScopableTrait, ModifiableTrait
-
-		$namespacedArgument = (new Argument)
-			->setName('file')
-			->setType(PhpFileInterface::class)
+		$this->instance
+			->setName('test')
+			->setType('string')
+			->makePublic()
 		;
 
-		$this->method->addArgument($namespacedArgument);
-		$this->assertNotEquals(PhpFileInterface::class, $namespacedArgument->getType());
+		$this->expectOutputString('public function test(): string;');
+		$this->instance->getDeclaration();
+	}
 	
-		$litteralArgument = (new Argument)
-			->setName('count')
-			->setType('int')
+	final public function testAbstractAppearsInDeclaration()
+	{
+		$this->instance
+			->setName('test')
+			->setType('string')
+			->makeAbstract()
 		;
 
-		$this->method->addArgument($litteralArgument);
-		$this->assertEquals('int', $litteralArgument->getType());
+		$this->expectOutputString('abstract private function test(): string;');
+		$this->instance->getDeclaration();
 	}
 
-	// public function testAddsTypeToDependencies()
-	// {
-	// 	// TODO: refactor using trait DependantTrait, NameableTrait, ScopableTrait, ModifiableTrait
-
-	// 	// checks $method->dependencies after addArgument
-	// }
-
-	public function testModifierOverride()
+	final public function testArgumentInDeclaration()
 	{
-		$this->assertNull($this->method->getModifier());
-		$this->assertFalse($this->method->isAbstract());
-		$this->assertFalse($this->method->isFinal());
+		$this->instance
+			->setName('test')
+			->setType('string')
+			->makeAbstract()
+		;
 
-		$this->method->makeAbstract();
-		$this->assertEquals('abstract', $this->method->getModifier());
-		$this->assertTrue($this->method->isAbstract());
-		$this->assertFalse($this->method->isFinal());
-		
-		$this->method->makeFinal();
-		$this->assertEquals('final', $this->method->getModifier());
-		$this->assertFalse($this->method->isAbstract());
-		$this->assertTrue($this->method->isFinal());
+		$this->instance->addArgument((new Argument)
+			->setType('int')
+			->setName('foo')
+		);
 
-		$this->method->makeAbstract();
-		$this->assertEquals('abstract', $this->method->getModifier());
-		$this->assertTrue($this->method->isAbstract());
-		$this->assertFalse($this->method->isFinal());
+		$this->expectOutputString('abstract private function test(int $foo): string;');
+		$this->instance->getDeclaration();
 	}
 
-	public function testScopeOverride()
+	final public function testArgumentsInDeclaration()
 	{
-		// should be private by default, for safety
-		$this->assertEquals('private', $this->method->getScope());
-		$this->assertNotEquals('protected', $this->method->getScope());
-		$this->assertNotEquals('public', $this->method->getScope());
-		
-		$this->method->makePublic();
-		$this->assertNotEquals('private', $this->method->getScope());
-		$this->assertNotEquals('protected', $this->method->getScope());
-		$this->assertEquals('public', $this->method->getScope());
-		
-		$this->method->makeProtected();
-		$this->assertNotEquals('private', $this->method->getScope());
-		$this->assertEquals('protected', $this->method->getScope());
-		$this->assertNotEquals('public', $this->method->getScope());
-		
-		$this->method->makePrivate();
-		$this->assertEquals('private', $this->method->getScope());
-		$this->assertNotEquals('protected', $this->method->getScope());
-		$this->assertNotEquals('public', $this->method->getScope());
+		$this->instance
+			->setName('test')
+			->setType('string')
+			->makeAbstract()
+		;
+
+		$this->instance->addArgument((new Argument)
+			->setType('int')
+			->setName('foo')
+		);
+
+		$this->instance->addArgument((new Argument)
+			->setType(TestCase::class)
+			->setName('bar')
+		);
+
+		$this->expectOutputString('abstract private function test(int $foo, TestCase $bar): string;');
+		$this->instance->getDeclaration();
 	}
 
-	// public function testWriteDeclaration()
-	// {
-	// 	$this->method
-	// 		->setName('execute')
-	// 		->makeFinal()
-	// 		->makePublic()
-	// 		->addArgument($this->firstArgument)
-	// 		->addArgument($this->secondArgument)
-	// 	;
+	final public function testDeclarationWithNoReturnType()
+	{
+		$this->instance
+			->setName('test')
+			->makeAbstract()
+		;
+		
+		$this->instance->addArgument((new Argument)
+			->setType(TestCase::class)
+			->setName('foo')
+		);
 
-	// 	$this->expectOutputString('test');
-	// 	$this->method->writeDeclaration();
-	// }
+		$this->expectOutputString('abstract private function test(TestCase $foo);');
+		$this->instance->getDeclaration();
+	}
+
+	final public function testDeclarationWithComment()
+	{
+		$this->instance
+			->setName('foo')
+			->setComment('Does nothing')
+			->makeAbstract()
+		;
+
+		$expectedOutput = '/**';
+		$expectedOutput .= PHP_EOL . ' * Does nothing';
+		$expectedOutput .= PHP_EOL . ' */';
+		$expectedOutput .= PHP_EOL . 'abstract private function test(TestCase $foo);';
+		
+		$this->expectOutputString($expectedOutput);
+		$this->instance->getDeclaration();
+	}
 }
