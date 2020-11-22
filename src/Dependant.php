@@ -45,7 +45,7 @@ trait Dependant
 	/**
 	 * Checks if a dependency is already stored
 	 * 
-	 * @param TypeableInterface - the dependency to check
+	 * @param string - the dependency to check
 	 * 
 	 * @return bool - true if the dependency is already stored, false otherwise
 	 */
