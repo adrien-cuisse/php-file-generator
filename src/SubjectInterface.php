@@ -25,7 +25,19 @@ interface SubjectInterface extends CommentableInterface, DependantInterface, Nam
 	public function addMethod(MethodInterface $method): self;
 
 	/**
-	 * @return string - the subjects PHP code
+	 * @return InterfaceInterface - the list of stored interfaces
 	 */
-	public function getCode(): string; 
+	// public function getInterfaces(): array;
+	
+	/**
+	 * @param InterfaceInterface - the interface to add to the suject
+	 * 
+	 * @return self
+	 */
+	// public function addInterface(InterfaceInterface $interface): self;
+
+	/**
+	 * @return string - the subject's PHP code
+	 */
+	public function getDefinition(): string;
 }

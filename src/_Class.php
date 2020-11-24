@@ -4,49 +4,30 @@ namespace App;
 
 use App\ClassInterface;
 use App\MethodInterface;
-use App\Commentable;
-use App\Dependant;
 use App\Expandable;
-use App\Nameable;
 
 final class _Class implements ClassInterface
 {
-	use Commentable;
-	use Dependant;
 	use Expandable;
-	use Nameable;
-	use Scopeable;
-	use Typeable;
+	use Subject;
 
 	/**
-	 * @var MethodInterface[] - the list of methods of the class
+	 * @see SubjectInterface
 	 */
-	private array $methods = [];
-
-	/**
-	 * @see ClassInterface
-	 */
-	public function getMethods(): array
-	{
-		return $this->methods;
-	}
-
-	/**
-	 * @see ClassInterface
-	 */
-	public function addMethod(MethodInterface $method): self
+	final public function addMethod(MethodInterface $method): self
 	{
 		// checkpoint
 
 		return $this;
 	}
 
+
 	/**
-	 * @see ClassInterface
+	 * @see SubjectInterface
 	 */
-	public function getDefinition(): string
+	final public function getDefinition(): string
 	{
 
-		return $this;
+		return '';
 	}
 }

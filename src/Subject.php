@@ -16,26 +16,24 @@ trait Subject
 	/**
 	 * @var MethodInterface[] - the list of stored methods
 	 */
-	private array $methods;
+	private array $methods = [];
 
 	/**
 	 * @see SubjectInterface
 	 */
 	public function getMethods(): array
 	{
-		
+		return $this->methods;
 	}
 
 	/**
 	 * @see SubjectInterface
+	 * Addable methods requirements depend of the subject
 	 */
-	public function addMethod(MethodInterface $method): self
-	{
-
-	}
+	public abstract function addMethod(MethodInterface $method): self;
 
 	/**
 	 * @see SubjectInterface
 	 */
-	public abstract function getCode(): string; 
+	public abstract function getDefinition(): string; 
 }
