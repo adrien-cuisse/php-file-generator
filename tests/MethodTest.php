@@ -4,12 +4,14 @@ namespace App\Tests;
 
 use App\Method;
 use App\Argument;
+use App\Exception\AbstractMethodDefinitionException;
 use App\Exception\AnonymousArgumentException;
 use App\Exception\AnonymousMethodException;
 use App\Exception\DuplicateArgumentException;
 use App\Exception\FinalMethodDeclarationException;
 use App\Exception\InvalidArgumentNameException;
 use App\Exception\InvalidMethodNameDeclarationException;
+use App\Exception\InvalidMethodNameDefinitionException;
 use PHPUnit\Framework\TestCase;
 
 final class MethodTest extends TestCase
@@ -200,15 +202,131 @@ final class MethodTest extends TestCase
 		$this->instance
 			->setName('foo')
 			->setComment('Does nothing')
-			->makeAbstract()
 		;
 
 		$expectedOutput = '/**';
 		$expectedOutput .= PHP_EOL . ' * Does nothing';
 		$expectedOutput .= PHP_EOL . ' */';
-		$expectedOutput .= PHP_EOL . 'abstract private function test(TestCase $foo);';
+		$expectedOutput .= PHP_EOL . 'private function foo();';
 		
 		$this->expectOutputString($expectedOutput);
 		$this->instance->getDeclaration();
+	}
+
+	final public function testDeclarationWithCommentAndArguments()
+	{
+		$argument = (new Argument)
+			->setType(TestCase::class)
+			->setName('bar')
+			->setComment('the test case')
+		;
+
+		$this->instance
+			->setName('foo')
+			->setComment('Does nothing')
+			->makeAbstract()
+			->addArgument($argument)
+		;
+
+		$expectedOutput = '/**';
+		$expectedOutput .= PHP_EOL . ' * Does nothing';
+		$expectedOutput .= PHP_EOL . ' *';
+		$expectedOutput .= PHP_EOL . ' * @param TestCase - the test case';
+		$expectedOutput .= PHP_EOL . ' */';
+		$expectedOutput .= PHP_EOL . 'abstract private function foo(TestCase $bar);';
+		
+		$this->expectOutputString($expectedOutput);
+		$this->instance->getDeclaration();
+	}
+
+	final public function testCanNotBeDefinedIfAnonymous()
+	{
+		$this->expectException(AnonymousMethodException::class);
+		$this->instance->getDefinition();
+	}
+
+	final public function testCanNotBeDefinedIfInvalidName()
+	{
+		$this->instance->setName('9');
+		$this->expectException(InvalidMethodNameDefinitionException::class);
+		$this->instance->getDefinition();
+	}
+
+	final public function testCanNotBeDefinedIfAbstract()
+	{
+		$this->instance
+			->setName('foo')
+			->makeAbstract()
+		;
+
+		$this->expectException(AbstractMethodDefinitionException::class);
+		$this->instance->getDefinition();	
+	}
+
+	final public function testCanonicalDefinition()
+	{
+		$this->instance
+			->setName('foo')
+		;
+
+		$expectedOuput = 'private function foo()' . PHP_EOL;
+		$expectedOuput .= '{' . PHP_EOL . '}';
+
+		$this->expectOutputString($expectedOuput);
+		$this->instance->getDefinition();	
+	}
+
+	final public function testDefinitionWithSelfReturn()
+	{
+		$this->instance
+			->setName('foo')
+			->setType(Method::FLUENT)
+		;
+
+		$expectedOuput = 'private function foo(): self' . PHP_EOL;
+		$expectedOuput .= '{' . PHP_EOL;
+		$expectedOuput .= "\treturn \$this;" . PHP_EOL;	
+		$expectedOuput .= '}';
+		
+		$this->expectOutputString($expectedOuput);
+		$this->instance->getDefinition();	
+	}
+
+	final public function testDefinitionWithStatements()
+	{
+		$this->instance
+			->setName('foo')
+			->addStatement("echo 'trololo';")
+			->addStatement("echo 'again';")
+		;
+
+		$expectedOuput = 'private function foo()' . PHP_EOL;
+		$expectedOuput .= '{' . PHP_EOL;
+		$expectedOuput .= "\techo 'trololo';" . PHP_EOL;
+		$expectedOuput .= "\techo 'again';" . PHP_EOL;
+		$expectedOuput .= '}';
+		
+		$this->expectOutputString($expectedOuput);
+		$this->instance->getDefinition();	
+	}
+
+	final public function testBlankLineBetweenStatementsAndReturn()
+	{
+		$this->instance
+			->setName('foo')
+			->setType(Method::FLUENT)
+			->addStatement("echo 'trololo';")
+			->addStatement("echo 'again';")
+		;
+
+		$expectedOuput = 'private function foo(): self' . PHP_EOL;
+		$expectedOuput .= '{' . PHP_EOL;
+		$expectedOuput .= "\techo 'trololo';" . PHP_EOL;
+		$expectedOuput .= "\techo 'again';" . PHP_EOL . PHP_EOL;
+		$expectedOuput .= "\treturn \$this;" . PHP_EOL;
+		$expectedOuput .= '}';
+		
+		$this->expectOutputString($expectedOuput);
+		$this->instance->getDefinition();	
 	}
 }

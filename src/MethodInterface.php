@@ -43,6 +43,13 @@ interface MethodInterface extends CommentableInterface, DependantInterface, Expa
 	public function addArgument(ArgumentInterface $argument): self;
 
 	/**
+	 * @param string - the statement to add to the method
+	 * 
+	 * @return self
+	 */
+	public function addStatement(string $statement): self;
+
+	/**
 	 * @throws AnonymousMethodException - if method has not been named
 	 * @throws InvalidMethodNameDeclarationException - if invalid name has been provided
 	 * @throws FinalMethodDeclarationException - if the method is final
