@@ -8,26 +8,26 @@ namespace App;
 interface ScopeableInterface
 {
 	/**
-	 * @return string - the scope, 'private' by default
+	 * @return string - the mapped scope, 'private by default'
 	 */
 	public function getScope(): string;
 
 	/**
-	 * Sets the scope to 'public'
+	 * Sets the scope as 'public'
 	 * 
 	 * @return self
 	 */
 	public function makePublic(): self;
 
 	/**
-	 * Sets the scope to 'protected'
+	 * Sets the scope as 'protected'
 	 * 
 	 * @return self
 	 */
 	public function makeProtected(): self;
 
 	/**
-	 * Sets the scope to 'private'
+	 * Sets the scope as 'private'
 	 * 
 	 * @return self
 	 */

@@ -2,16 +2,17 @@
 
 namespace App\Exception;
 
+/**
+ * Tried to assign a type with invalid name
+ */
 final class DuplicateArgumentException extends \InvalidArgumentException
 {
-	public function __construct(?string $methodName, string $argumentName)
+	final public function __construct(string $methodName, string $argumentName)
 	{
-		parent::__construct(
-			sprintf(
-				"Tried to add duplicate argument [%s] to %s method%s",
-				$argumentName,
-				$methodName === null ? 'anonymous' : '',
-				$methodName !== null ? ' [' . $methodName  . ']' : '' 
-			)
-		);
-	}}
+		parent::__construct(sprintf(
+			'The method %s already has an argument named %s',
+			$methodName,
+			$argumentName
+		));
+	}
+}

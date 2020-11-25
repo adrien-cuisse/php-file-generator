@@ -3,24 +3,22 @@
 namespace App;
 
 /**
- * A comment on an argument, a method, class, etc
+ * Provides comments
  */
 interface CommentableInterface
 {
 	/**
-	 * @return string - the comment
+	 * @var string - the mapped comment
 	 */
-	public function getComment(): string;
+	public function getComment(): ?string;
 
 	/**
 	 * @param string - the comment to set
-	 * 
-	 * @return self
 	 */
 	public function setComment(string $comment): self;
 
 	/**
-	 * @return bool - true if it has a comment, false otherwise
+	 * @return bool - true if a comment was set, false otherwise
 	 */
 	public function hasComment(): bool;
 }

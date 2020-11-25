@@ -3,38 +3,104 @@
 namespace App\Tests;
 
 use App\Typeable;
+use App\Exception\InvalidTypeException;
 use PHPUnit\Framework\TestCase;
 
 final class TypeableTest extends TestCase
-{
-	final public function setUp(): void
+{	
+	final public function test_litteral_types_are_applied()
 	{
-		$this->instance = $this->getMockForTrait(Typeable::class);
-	}
-
-	final public function testHasNoTypeIfNotSpecified()
-	{
-		$this->assertFalse($this->instance->isTyped());
+		// given
+		$typeable = $this->getMockForTrait(Typeable::class);
 		
-		$this->instance->setType('bool');
-		$this->assertTrue($this->instance->isTyped());
+		// when
+		$typeable->setType('string');
+		
+		// then
+		$this->assertEquals('string', $typeable->getCanonicalType());
 	}
 
-	final public function testDetectsNamespace()
+	final public function test_namespace_is_extracted_from_canonical_type()
 	{
-		$this->instance->setType(Typeable::class);
-		$this->assertTrue($this->instance->isNamespaced());
-		$this->assertFalse($this->instance->isCanonical());
+		// given
+		$typeable = $this->getMockForTrait(Typeable::class);
+		
+		// when
+		$typeable->setType(TestCase::class);
+		
+		// then
+		$this->assertEquals('TestCase', $typeable->getCanonicalType());
+	}
 
-		$this->instance->setType('int');
-		$this->assertFalse($this->instance->isNamespaced());
-		$this->assertTrue($this->instance->isCanonical());
-	} 
-
-	final public function testNamespaceIsExtracted()
+	final public function test_qualified_type_is_set()
 	{
-		$this->instance->setType(Typeable::class);
-		$this->assertEquals(Typeable::class, $this->instance->getQualifiedType());
-		$this->assertEquals('Typeable', $this->instance->getCanonicalType());
+		// given
+		$typeable = $this->getMockForTrait(Typeable::class);
+		
+		// when
+		$typeable->setType(TestCase::class);
+		
+		// then
+		$this->assertEquals(TestCase::class, $typeable->getQualifiedType());
+	}
+
+	final public function test_rejects_invalid_litteral_types()
+	{
+		// given
+		$typeable = $this->getMockForTrait(Typeable::class);
+		
+		// when
+		
+		// then
+		$this->expectException(InvalidTypeException::class);
+		$typeable->setType('42');
+	}
+
+	final public function test_rejects_invalid_namespaced_types()
+	{
+		// given
+		$typeable = $this->getMockForTrait(Typeable::class);
+		
+		// when
+		
+		// then
+		$this->expectException(InvalidTypeException::class);
+		$typeable->setType('App\\Test\\42\\Foo');
+	}
+
+	final public function test_detects_types()
+	{
+		// given
+		$typeable = $this->getMockForTrait(Typeable::class);
+		
+		// when
+		$typeable->setType('string');
+		
+		// then
+		$this->assertTrue($typeable->isTyped());
+	}
+
+	final public function test_detects_namespace()
+	{
+		// given
+		$typeable = $this->getMockForTrait(Typeable::class);
+		
+		// when
+		$typeable->setType(TestCase::class);
+		
+		// then
+		$this->assertTrue($typeable->isNamespaced());
+	}
+
+	final public function test_adds_dependencies()
+	{
+		// given
+		$typeable = $this->getMockForTrait(Typeable::class);
+		
+		// when
+		$typeable->setType(TestCase::class);
+		
+		// then
+		$this->assertCount(1, $typeable->getDependencies());
 	}
 }

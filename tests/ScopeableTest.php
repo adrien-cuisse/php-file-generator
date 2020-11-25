@@ -3,30 +3,47 @@
 namespace App\Tests;
 
 use App\Scopeable;
+use App\Exception\InvalidNameException;
 use PHPUnit\Framework\TestCase;
 
 final class ScopeableTest extends TestCase
-{
-	final public function setUp(): void
+{	
+	final public function test_goes_public()
 	{
-		$this->instance = $this->getMockForTrait(Scopeable::class);
+		// given
+		$scopeable = $this->getMockForTrait(Scopeable::class);
+		
+		// when
+		$scopeable->makeProtected();
+		$scopeable->makePublic();
+		
+		// then
+		$this->assertEquals('public', $scopeable->getScope());
 	}
 
-	final public function testScopeIsUpdated()
+	final public function test_goes_protected()
 	{
-		$scopes = [];
+		// given
+		$scopeable = $this->getMockForTrait(Scopeable::class);
+		
+		// when
+		$scopeable->makePrivate();
+		$scopeable->makeProtected();
+		
+		// then
+		$this->assertEquals('protected', $scopeable->getScope());
+	}
 
-		$this->instance->makePublic();
-		$scopes[] = $this->instance->getScope();
+	final public function test_goes_private()
+	{
+		// given
+		$scopeable = $this->getMockForTrait(Scopeable::class);
 		
-		$this->instance->makeProtected();
-		$scopes[] = $this->instance->getScope();
-		
-		$this->instance->makePrivate();
-		$scopes[] = $this->instance->getScope();
-		
-		$scopes = array_unique($scopes);
+		// when
+		$scopeable->makePublic();
+		$scopeable->makePrivate();
 
-		$this->assertCount(3, $scopes);
+		// then
+		$this->assertEquals('private', $scopeable->getScope());
 	}
 }

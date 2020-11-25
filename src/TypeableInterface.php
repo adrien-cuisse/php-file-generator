@@ -2,40 +2,37 @@
 
 namespace App;
 
+use App\TypeableInterface;
+
 /**
- * Provides a type
+ * Provides a typing
  */
-interface TypeableInterface
-{	
+interface TypeableInterface extends DependantInterface
+{
 	/**
-	 * @param string - the name of the type
+	 * @param string - the (potentially namespaced) type to set
 	 * 
-	 * @return self
+	 * @throws InvalidTypeException - if the given type is not a valid name
 	 */
 	public function setType(string $type): self;
 
 	/**
-	 * @return bool - true if a type has been provided, false otherwise
+	 * @return string|null - the namespaced type, if any
+	 */
+	public function getCanonicalType(): ?string;
+	
+	/**
+	 * @return string|null - the canonical type, if any
+	 */
+	public function getQualifiedType(): ? string;
+
+	/**
+	 * @return bool - true if it's typed, false otherwise
 	 */
 	public function isTyped(): bool;
 
 	/**
-	 * @return bool - true is no qualified name exists, false otherwise
+	 * @return bool - true if it's namespaced, false otherwise
 	 */
-	public function isCanonical(): bool;
-
-	/**
-	 * @return bool - true is a qualified name exists, false otherwise
-	 */
-	public function isNamespaced(): bool;	
-
-	/**
-	 * @return string - the name of the type (without namespace, if any 
-	 */
-	public function getCanonicalType(): ?string;
-
-	/**
-	 * @return string|null - the fully qualified name of type (including namespace), if any
-	 */
-	public function getQualifiedType(): ?string;
+	public function isNamespaced(): bool;
 }

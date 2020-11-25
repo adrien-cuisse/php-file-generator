@@ -5,14 +5,14 @@ namespace App;
 trait Scopeable
 {
 	/**
-	 * @var string - the scope
+	 * @var string - the mapped scope
 	 */
 	private string $scope = 'private';
 
 	/**
 	 * @see ScopeableInterface
 	 */
-	public function getScope(): string
+	final public function getScope(): string
 	{
 		return $this->scope;
 	}
@@ -20,7 +20,7 @@ trait Scopeable
 	/**
 	 * @see ScopeableInterface
 	 */
-	public function makePublic(): self
+	final public function makePublic(): self
 	{
 		$this->scope = 'public';
 
@@ -30,7 +30,7 @@ trait Scopeable
 	/**
 	 * @see ScopeableInterface
 	 */
-	public function makeProtected(): self
+	final public function makeProtected(): self
 	{
 		$this->scope = 'protected';
 
@@ -40,7 +40,7 @@ trait Scopeable
 	/**
 	 * @see ScopeableInterface
 	 */
-	public function makePrivate(): self
+	final public function makePrivate(): self
 	{
 		$this->scope = 'private';
 

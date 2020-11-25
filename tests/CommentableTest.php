@@ -3,24 +3,32 @@
 namespace App\Tests;
 
 use App\Commentable;
+use App\Exception\InvalidTypeException;
 use PHPUnit\Framework\TestCase;
 
 final class CommentableTest extends TestCase
-{
-	final public function setUp(): void
+{	
+	final public function test_comment_is_set()
 	{
-		$this->instance = $this->getMockForTrait(Commentable::class);
+		// given
+		$commentable = $this->getMockForTrait(Commentable::class);
+		
+		// when
+		$commentable->setComment('some comment');
+		
+		// then
+		$this->assertEquals('some comment', $commentable->getComment());
 	}
 
-	final public function testDetectsComment()
+	final public function test_detects_comment()
 	{
-		$this->instance->setComment('');
-		$this->assertFalse($this->instance->hasComment());
-
-		$this->instance->setComment(' ');
-		$this->assertFalse($this->instance->hasComment());
-
-		$this->instance->setComment('test');
-		$this->assertTrue($this->instance->hasComment());
+		// given
+		$commentable = $this->getMockForTrait(Commentable::class);
+		
+		// when
+		$commentable->setComment('some comment');
+		
+		// then
+		$this->assertTrue($commentable->hasComment());
 	}
 }

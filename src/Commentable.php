@@ -5,33 +5,33 @@ namespace App;
 trait Commentable
 {
 	/**
-	 * @var string - the comment
+	 * @var string|null - the mapped comment
 	 */
-	private string $comment = '';
+	private ?string $comment = null;
 
 	/**
-	 * @see CommentableInterface
+	 * @var string - the mapped comment
 	 */
-	final public function getComment(): string
+	final public function getComment(): ?string
 	{
 		return $this->comment;
 	}
 
 	/**
-	 * @see CommentableInterface
+	 * @param string - the comment to set
 	 */
 	final public function setComment(string $comment): self
 	{
-		$this->comment = trim($comment);
+		$this->comment = $comment;
 
 		return $this;
 	}
 
 	/**
-	 * @see CommentableInterface
+	 * @return bool - true if a comment was set, false otherwise
 	 */
 	final public function hasComment(): bool
 	{
-		return '' !== $this->comment;
+		return null !== $this->comment;
 	}
 }

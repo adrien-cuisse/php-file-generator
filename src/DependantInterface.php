@@ -2,25 +2,27 @@
 
 namespace App;
 
-use App\TypeableInterface;
-
 /**
- * Provides a list of dependencies (types to include)
+ * Provides a list of namespaced type-dependencies
  */
 interface DependantInterface
 {
 	/**
-	 * @return TypeableInterface[] - the list of types it needs
+	 * @return string[] - the list of namespaced typed-dependencies
 	 */
 	public function getDependencies(): array;
 
 	/**
-	 * @param TypeableInterface - the type to add
+	 * @param string - the dependency to add
+	 * 
+	 * @return self
 	 */
-	public function addDependency(TypeableInterface $dependency): self;
+	public function addDependency(string $dependency): self;
 
 	/**
-	 * @return bool - true if it has dependencies, false otherwise
+	 * @param string[] - list of dependencies to add to the current ones
+	 * 
+	 * @return self
 	 */
-	public function hasDependencies(): bool;
+	public function addDependencies(array $dependencies): self;
 }

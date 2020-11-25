@@ -15,12 +15,12 @@
     <testsuite name="Project Test Suite">
       <directory>tests</directory>
       <file>TypeableTest</file>
-      <!-- <file>NameableTest</file>
-      <file>CommentableTest</file>
-      <file>ScopableTestTest</file>
-      <file>ExpandableTest</file>
-      <file>DependantTest</file>
-      <file>MethodTest</file> -->
+      <!-- <file>NameableTest</file> -->
+      <!-- <file>CommentableTest</file> -->
+      <!-- <file>ScopableTestTest</file> -->
+      <!-- <file>ExpandableTest</file> -->
+      <!-- <file>DependantTest</file> -->
+      <!-- <file>MethodTest</file> -->
     </testsuite>
   </testsuites>
 </phpunit>

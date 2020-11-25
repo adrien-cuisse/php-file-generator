@@ -3,29 +3,24 @@
 namespace App;
 
 /**
- * Provides an identifier
+ * Provides a name
  */
 interface NameableInterface
-{	
+{
 	/**
-	 * @return string - the name, if any
+	 * @return string|null - the mapped name, if any
 	 */
 	public function getName(): ?string;
 
 	/**
 	 * @param string - the name to set
 	 * 
-	 * @return self;
+	 * @throws InvalidNameException - if the provided name is an invalid identifier
 	 */
 	public function setName(string $name): self;
 
 	/**
-	 * @return bool - true if a name was provided, false otherwise
+	 * @return bool - true if it was named, false otherwise
 	 */
 	public function isNamed(): bool;
-
-	/**
-	 * @return bool - true is the name is a valid identifier, false otherwise
-	 */
-	public function hasValidName(): bool;
 }

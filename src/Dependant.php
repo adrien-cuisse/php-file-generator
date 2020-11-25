@@ -2,19 +2,19 @@
 
 namespace App;
 
-use App\TypeableInterface;
+use App\DependantInterface;
 
 trait Dependant
 {
 	/**
-	 * @var TypeableInterface[] - the list of types it needs
+	 * @var array - the list of dependencies
 	 */
 	private array $dependencies = [];
 
 	/**
 	 * @see DependantInterface
 	 */
-	public function getDependencies(): array
+	final public function getDependencies(): array
 	{
 		return $this->dependencies;
 	}
@@ -22,35 +22,22 @@ trait Dependant
 	/**
 	 * @see DependantInterface
 	 */
-	public function addDependency(TypeableInterface $dependency): self
+	final public function addDependency(string $dependency): self
 	{
-		if ($dependency->isTyped() && $dependency->isNamespaced()) {
-			$type = $dependency->getQualifiedType();
-			if (! $this->hasDependency($type)) {
-				$this->dependencies[] = $type; 
-			}
-		}
-		
-		return $this;
+		return $this->addDependencies([$dependency]);
 	}
 
 	/**
 	 * @see DependantInterface
 	 */
-	public function hasDependencies(): bool
+	final public function addDependencies(array $dependencies): self
 	{
-		return 0 !== count($this->dependencies);
-	}
+		foreach ($dependencies as $dependency) {
+			$this->dependencies[] = $dependency;
+		}
 
-	/**
-	 * Checks if a dependency is already stored
-	 * 
-	 * @param string - the dependency to check
-	 * 
-	 * @return bool - true if the dependency is already stored, false otherwise
-	 */
-	final private function hasDependency(string $type): bool
-	{
-		return in_array($type, $this->dependencies);
+		$this->dependencies = array_unique($this->dependencies);
+
+		return $this;
 	}
 }
