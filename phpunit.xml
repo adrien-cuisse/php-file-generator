@@ -14,13 +14,13 @@
   <testsuites>
     <testsuite name="Project Test Suite">
       <directory>tests</directory>
-      <file>TypeableTest</file>
-      <!-- <file>NameableTest</file> -->
-      <!-- <file>CommentableTest</file> -->
-      <!-- <file>ScopableTestTest</file> -->
-      <!-- <file>ExpandableTest</file> -->
-      <!-- <file>DependantTest</file> -->
-      <!-- <file>MethodTest</file> -->
+      <file>DependantTest.php</file>
+      <file>TypeableTest.php</file>
+      <file>CommentableTest.php</file>
+      <file>NameableTest.php</file>
+      <file>ScopableTestTest.php</file>
+      <file>ExpandableTest.php</file>
+      <file>MethodTest.php</file>
     </testsuite>
   </testsuites>
 </phpunit>

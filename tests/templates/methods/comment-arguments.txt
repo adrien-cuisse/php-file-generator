@@ -1,0 +1,6 @@
+/**
+ * Some method
+ *
+ * @param TestCase - the case
+ * @param string - the message
+ */

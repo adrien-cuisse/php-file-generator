@@ -11,5 +11,10 @@ use App\TypeableInterface;
  */
 interface ArgumentInterface extends CommentableInterface, NameableInterface, TypeableInterface
 {
-
+	/**
+	 * @param string - the name of the argument
+	 * 
+	 * @throws InvalidNameException - if the name is not a valid identifier
+	 */
+	public function __construct(string $name);
 }

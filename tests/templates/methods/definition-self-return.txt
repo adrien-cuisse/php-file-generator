@@ -1,0 +1,4 @@
+private function method(): self
+{
+	return $this;
+}

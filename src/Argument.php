@@ -14,7 +14,7 @@ final class Argument implements ArgumentInterface
 	use Typeable;
 
 	/**
-	 * @param string - the name of the argument
+	 * @see ArgumentInterface
 	 */
 	final public function __construct(string $name)
 	{
