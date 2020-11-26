@@ -81,10 +81,6 @@ trait Typeable
 	final private function isValidType(string $type): bool
 	{
 		$tokens = explode('\\', $type);
-		
-		if (empty($tokens)) {
-			$tokens[] = $type;
-		}
 
 		foreach($tokens as $token) {
 			if (0 === preg_match('/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/', $token)) {

@@ -8,9 +8,9 @@
             "email": "adriien.cuisse@epitech.eu"
         }
     ],
-	"require": {},
 	"scripts": {
-		"test": "vendor/bin/phpunit-watcher watch --colors=always"
+		"test": "vendor/bin/phpunit-watcher watch --colors=always",
+		"test-report": "vendor/bin/phpunit --coverage-html coverage --testdox-html coverage/dox.html"
 	},
 	"autoload": {
         "psr-4": {
